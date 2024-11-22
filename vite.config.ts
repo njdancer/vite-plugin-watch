@@ -10,7 +10,7 @@ export default defineConfig({
       fileName: `vite-plugin-watch`,
     },
     rollupOptions: {
-      external: ["node:child_process", "node:path"],
+      external: ["node:child_process", "node:path", "node:util"],
     },
   },
   plugins: [eslintPlugin()],

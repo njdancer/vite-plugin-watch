@@ -47,6 +47,7 @@ The paths of tracked files are configured as [glob patterns](<https://en.wikiped
 | timeout | number           | Timeout between triggering the same command              | 500     |
 | silent  | boolean          | Hide the output in the console                           | false   |
 | onInit  | boolean          | Run the command on Vite start                            | true    |
+| await   | boolean          | Await the completion of the command                      | false   |
 
 ## Advanced Inertia
 

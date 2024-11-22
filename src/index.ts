@@ -2,6 +2,9 @@ import { PluginOption } from "vite"
 import minimatch from "minimatch"
 import path from "node:path"
 import { exec } from "node:child_process"
+import { promisify } from "node:util"
+
+const execAsync = promisify(exec)
 
 export const watch = (config: {
   pattern: string | string[]
@@ -9,23 +12,27 @@ export const watch = (config: {
   silent?: boolean
   timeout?: number
   onInit?: boolean
+  await?: boolean
 }): PluginOption => {
   const options = {
     silent: false,
     timeout: 500,
     onInit: true,
+    await: false,
     ...config,
   }
 
   let throttled = false
 
-  const execute = () => {
-    ;[options.command].flat().forEach((command) => {
-      exec(command, (exception, output, error) => {
-        if (!options.silent && output) console.log(output)
-        if (!options.silent && error) console.error(error)
+  const execute = async () => {
+    await Promise.all(
+      [options.command].flat().map(async (command) => {
+        const { stdout, stderr } = await execAsync(command)
+
+        if (!options.silent && stdout) console.log(stdout)
+        if (!options.silent && stderr) console.error(stderr)
       })
-    })
+    )
   }
 
   return {
@@ -33,7 +40,9 @@ export const watch = (config: {
 
     buildStart() {
       if (options.onInit) {
-        execute()
+        const executionPromise = execute()
+
+        if (options.await) return executionPromise
       }
     },
 
@@ -52,7 +61,9 @@ export const watch = (config: {
       if (shouldRun) {
         console.info("Running", options.command, "\n")
 
-        execute()
+        const executionPromise = execute()
+
+        if (options.await) return executionPromise
       }
     },
   }
